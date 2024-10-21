@@ -1,0 +1,49 @@
+name: Run Python Script from Private Repo on PR
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on pull request events
+  pull_request:
+  # Runs CI on every day (at 06:00 UTC)
+  schedule:
+    - cron: '0 6 * * *'
+  push:
+    branches: [ "main" ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  run-python:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code from the current repo
+      uses: actions/checkout@v3
+
+    - name: Clone private repository
+      env:
+        PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
+      run: |
+        echo "Cloning private repository..."
+        git clone https://$PAT_TOKEN@github.com:priyanshu-247/pr-flow.git
+        echo "Repository cloned successfully!"
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 'pypy3.10' 
+
+    - name: Install dependencies
+      run: |
+        cd pr-flow
+        pip install poetry
+        crewai install 
+
+    - name: Run Python script
+      env:
+        REPOSITORY_OWNER: ${{ github.repository_owner }}
+        REPOSITORY_NAME: ${{ github.repository }}
+        PR_NUMBER: ${{ github.event.pull_request.number }}
+      run: |
+        crewai flow run 
