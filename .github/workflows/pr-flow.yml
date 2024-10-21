@@ -15,7 +15,7 @@ jobs:
     steps:
     - name: echo secrets 
       run: echo ${{ secrets.PAT_TOKEN }}
-       
+
     - name: Checkout code from the current repo
       uses: actions/checkout@v3
 
@@ -35,6 +35,8 @@ jobs:
       run: |
         cd pr-flow
         pip install poetry
+        pip install crewai 
+        pip install 'crewai[tools]'
         crewai install 
 
     - name: Run Python script
