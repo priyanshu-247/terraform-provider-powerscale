@@ -53,13 +53,17 @@ jobs:
       run: |
         cd pr-flow
         poetry install
+        pip install crewai crewai-tools
         
     - name: Run Python script
       env:
         PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
         GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
-        REPOSITORY_OWNER: ${{ github.repository_owner }}
-        REPOSITORY_NAME: ${{ github.repository }}
+        REPOSITORY: ${{ github.repository }}
         PR_NUMBER: ${{ github.event.pull_request.number }}
       run: |
+        echo $GROQ_API_KEY
+        echo $PAT_TOKEN
+        echo $REPOSITORY
+        echo "$PWD" 
         crewai flow run
