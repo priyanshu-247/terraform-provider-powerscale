@@ -66,4 +66,5 @@ jobs:
         echo $PAT_TOKEN
         echo $REPOSITORY
         echo "$PWD" 
+        cd pr-flow
         crewai flow run
