@@ -34,10 +34,9 @@ jobs:
     - name: Install dependencies
       run: |
         cd pr-flow
-        pip install poetry
-        poetry install --no-root
-        poetry shell
-
+        pip install crewai crewai-tools
+        crewai install 
+        
     - name: Run Python script
       env:
         PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
