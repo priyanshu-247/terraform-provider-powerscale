@@ -59,8 +59,8 @@ jobs:
       env:
         PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
         GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
-        REPOSITORY: ${{ github.repository }}
-        PR_NUMBER: ${{ github.event.pull_request.number }}
+        REPOSITORY: "dell/terraform-provider-powerscale"
+        PR_NUMBER: "218"
       run: |
         echo $GROQ_API_KEY
         echo $PAT_TOKEN
