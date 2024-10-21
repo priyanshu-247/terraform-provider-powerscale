@@ -50,7 +50,9 @@ jobs:
           key: venv-${{ hashFiles('poetry.lock') }}
 
     - name: Install the project dependencies
-      run: poetry install
+      run: |
+        cd pr-flow
+        poetry install
         
     - name: Run Python script
       env:
