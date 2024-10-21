@@ -35,7 +35,7 @@ jobs:
       run: |
         cd pr-flow
         pip install poetry
-        poetry install 
+        poetry install --no-root
         poetry shell
 
     - name: Run Python script
