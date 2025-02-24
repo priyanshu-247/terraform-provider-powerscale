@@ -23,20 +23,20 @@ limitations under the License.
 
 # PowerScale ACL Settings allow you to manage file and directory permissions, referred to as access rights.
 resource "powerscale_aclsettings" "example_acl_settings" {
-  # Optional fields both for creating and updating
+ Optional fields both for creating and updating
   # Please check the acceptable inputs for each setting in the documentation
-  #     access                  = "windows"
-  #     calcmode                = "approx"
-  #     calcmode_group          = "group_aces"
-  #     calcmode_owner          = "owner_aces"
-  #     calcmode_traverse       = "ignore"
-  #     chmod                   = "merge"
-  #     chmod_007               = "default"
-  #     chmod_inheritable       = "no"
-  #     chown                   = "owner_group_and_acl"
-  #     create_over_smb         = "allow"
-  #     dos_attr                = "deny_smb"
-  #     group_owner_inheritance = "creator"
+       access                  = "windows"
+       calcmode                = "approx"
+       calcmode_group          = "group_aces"
+       calcmode_owner          = "owner_aces"
+       calcmode_traverse       = "ignore"
+     chmod                   = "merge"
+       chmod_007               = "default"
+       chmod_inheritable       = "no"
+       chown                   = "owner_group_and_acl"
+       create_over_smb         = "allow"
+       dos_attr                = "deny_smb"
+       group_owner_inheritance = "creator"
   #     rwx                     = "retain"
   #     synthetic_denies        = "remove"
   #     utimes                  = "only_owner"
