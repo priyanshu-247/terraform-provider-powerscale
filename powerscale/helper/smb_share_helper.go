@@ -84,10 +84,10 @@ func ListSmbShares(ctx context.Context, client *client.Client, smbFilter *models
 			listSmbParam = listSmbParam.Dir(smbFilter.Dir.ValueString())
 		}
 		if !smbFilter.Limit.IsNull() {
-			listSmbParam = listSmbParam.Limit(int32(smbFilter.Limit.ValueInt64()))
+			listSmbParam = listSmbParam.Limit((smbFilter.Limit.ValueInt32()))
 		}
 		if !smbFilter.Offset.IsNull() {
-			listSmbParam = listSmbParam.Offset(int32(smbFilter.Offset.ValueInt64()))
+			listSmbParam = listSmbParam.Offset((smbFilter.Offset.ValueInt32()))
 		}
 	}
 	smbShares, _, err := listSmbParam.Execute()
@@ -104,4 +104,15 @@ func ListSmbShares(ctx context.Context, client *client.Client, smbFilter *models
 		totalSmbShares = append(totalSmbShares, smbShares.Shares...)
 	}
 	return &totalSmbShares, nil
+}
+
+// For List set explicitly from plan
+// This is to keep state in similar order to plan
+// Lists returned from the array are not always in the same order as they appear in the plan
+func SMBShareListsDiff(ctx context.Context, plan models.SmbShareResource, state *models.SmbShareResource) {
+	state.FileFilterExtensions = ListCheck(plan.FileFilterExtensions, plan.FileFilterExtensions.ElementType(ctx))
+	state.HostACL = ListCheck(plan.HostACL, plan.HostACL.ElementType(ctx))
+	state.MangleMap = ListCheck(plan.MangleMap, plan.MangleMap.ElementType(ctx))
+	state.Permissions = ListCheck(plan.Permissions, plan.Permissions.ElementType(ctx))
+	state.RunAsRoot = ListCheck(plan.RunAsRoot, plan.RunAsRoot.ElementType(ctx))
 }

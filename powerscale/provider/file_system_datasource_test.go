@@ -47,17 +47,6 @@ func TestAccFileSystemDataSource(t *testing.T) {
 					resource.TestCheckResourceAttr(fsTerraform, "file_systems_details.file_system_namespace_acl.owner.id", "UID:0"),
 					resource.TestCheckResourceAttr(fsTerraform, "file_systems_details.file_system_namespace_acl.owner.name", "root"),
 					resource.TestCheckResourceAttr(fsTerraform, "file_systems_details.file_system_namespace_acl.owner.type", "user"),
-					resource.TestCheckResourceAttr(fsTerraform, "file_systems_details.file_system_namespace_acl.mode", "0700"),
-					resource.TestCheckResourceAttr(fsTerraform, "file_systems_details.file_system_quotas.0.container", "true"),
-					resource.TestCheckResourceAttr(fsTerraform, "file_systems_details.file_system_quotas.0.enforced", "false"),
-					resource.TestCheckResourceAttr(fsTerraform, "file_systems_details.file_system_quotas.0.path", "/ifs/tfacc_file_system_test"),
-					resource.TestCheckResourceAttr(fsTerraform, "file_systems_details.file_system_quotas.0.type", "directory"),
-					resource.TestCheckResourceAttr(fsTerraform, "file_systems_details.file_system_quotas.0.usage.fslogical_ready", "true"),
-					resource.TestCheckResourceAttr(fsTerraform, "file_systems_details.file_system_quotas.0.usage.fsphysical", "2048"),
-					resource.TestCheckResourceAttr(fsTerraform, "file_systems_details.file_system_quotas.0.usage.shadow_refs", "0"),
-					resource.TestCheckResourceAttr(fsTerraform, "file_systems_details.file_system_quotas.0.usage.inodes", "1"),
-					resource.TestCheckResourceAttr(fsTerraform, "file_systems_details.file_system_snapshots.0.has_locks", "false"),
-					resource.TestCheckResourceAttr(fsTerraform, "file_systems_details.file_system_snapshots.0.state", "active"),
 				),
 			},
 		},
@@ -161,9 +150,30 @@ func TestAccFileSystemDataSourceReleaseMock(t *testing.T) {
 	})
 }
 
-var FileSystemDataSourceConfig = `
+var FileSystemResourceConfigCommon = `
+resource "powerscale_filesystem" "file_system_test" {
+	directory_path         = "/ifs"	
+	name = "tfacc_file_system_test"	
+	  recursive = true
+	  overwrite = true
+	  group = {
+		id   = "GID:0"
+		name = "wheel"
+		type = "group"
+	  }
+	  owner = {
+		  id   = "UID:0",
+		 name = "root",
+		 type = "user"
+	   }
+	}
+`
+
+var FileSystemDataSourceConfig = FileSystemResourceConfigCommon + `
 data "powerscale_filesystem" "system" {
 	# Required parameter, path of the directory filesystem you would like to create a datasource out of 
+
+	depends_on = [powerscale_filesystem.file_system_test]
 	directory_path = "/ifs/tfacc_file_system_test"
   }
 `

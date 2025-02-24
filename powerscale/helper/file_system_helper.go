@@ -241,7 +241,11 @@ func extractSnapshotModel(ctx context.Context, attr []powerscale.V1SnapshotSnaps
 			return snapModel, err
 		}
 		destination.ID = types.Int64Value(int64(nmlai.Id))
-		destination.TargetID = types.Int64Value(int64(nmlai.TargetId))
+		if nmlai.TargetId == 18446744073709551615 {
+			destination.TargetID = types.Int64Value(-1)
+		} else {
+			destination.TargetID = types.Int64Value(int64(nmlai.TargetId)) // #nosec G115 --- validated, set to -1 if targetID is max uint64
+		}
 		snapModel = append(snapModel, destination)
 	}
 	return snapModel, nil
@@ -583,7 +587,7 @@ func UpdateFileSystemAccessControl(ctx context.Context, client *client.Client, d
 		if err != nil {
 			errStr := constants.SetFileSystemACLErrorMsg + "Error Updating AccessControl for the filesystem with error: "
 			message := GetErrorString(err, errStr)
-			return fmt.Errorf(message)
+			return fmt.Errorf("%s", message)
 		}
 	}
 	return nil

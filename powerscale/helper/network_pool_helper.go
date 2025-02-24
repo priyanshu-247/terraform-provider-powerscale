@@ -42,6 +42,19 @@ func GetNetworkPools(ctx context.Context, client *client.Client, state models.Ne
 	}
 
 	networkPools, _, err := networkPoolParams.Execute()
+	if err != nil {
+		return nil, err
+	}
+	//pagination
+	for networkPools.Resume != nil && state.NetworkPoolFilter != nil {
+		networkPoolParams = networkPoolParams.Resume(*networkPools.Resume)
+		respAdd, _, errAdd := networkPoolParams.Execute()
+		if errAdd != nil {
+			return networkPools, errAdd
+		}
+		networkPools.Resume = respAdd.Resume
+		networkPools.Pools = append(networkPools.Pools, respAdd.Pools...)
+	}
 	return networkPools, err
 }
 
@@ -78,4 +91,14 @@ func UpdateNetworkPool(ctx context.Context, client *client.Client, npID string, 
 func DeleteNetworkPool(ctx context.Context, client *client.Client, npID string, groupnet string, subnet string) error {
 	_, err := client.PscaleOpenAPIClient.NetworkApi.DeleteNetworkv12GroupnetsGroupnetSubnetsSubnetPool(ctx, npID, groupnet, subnet).Execute()
 	return err
+}
+
+// For List set explicitly from plan
+// This is to keep state in similar order to plan
+// Lists returned from the array are not always in the same order as they appear in the plan
+func NetworkPoolListsDiff(ctx context.Context, plan models.NetworkPoolResourceModel, state *models.NetworkPoolResourceModel) {
+	state.Ifaces = ListCheck(plan.Ifaces, plan.Ifaces.ElementType(ctx))
+	state.Ranges = ListCheck(plan.Ranges, plan.Ranges.ElementType(ctx))
+	state.ScDNSZoneAliases = ListCheck(plan.ScDNSZoneAliases, plan.ScDNSZoneAliases.ElementType(ctx))
+	state.StaticRoutes = ListCheck(plan.StaticRoutes, plan.StaticRoutes.ElementType(ctx))
 }

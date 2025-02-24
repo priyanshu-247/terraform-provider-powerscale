@@ -66,10 +66,11 @@ func TestAccSmbShareSettingsResourceImport(t *testing.T) {
 			},
 			// import testing
 			{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateId:     "System",
-				ImportStateVerify: true,
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateId:           "System",
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"file_filter_extensions", "host_acl", "mangle_map"},
 			},
 		},
 	})
@@ -279,12 +280,14 @@ access_based_enumeration           = false
 		zone                               = "System"
 }
 `
-var SmbShareSettingsUpdatedResourceConfig = `
+var SmbShareSettingsUpdatedResourceConfig = tfaccAccessZoneConfig + `
 resource "powerscale_smb_share_settings" "share_settings_test" {
 	access_based_enumeration           = true
 		access_based_enumeration_root_only = true
 		allow_delete_readonly              = false
 		ca_timeout                         = 60
 		zone                               = "tfaccAccessZone"
+
+	depends_on = [powerscale_accesszone.tfaccAccessZone]
 }
 `

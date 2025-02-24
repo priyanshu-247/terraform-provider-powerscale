@@ -57,7 +57,7 @@ type SnapshotScheduleFilter struct {
 	// The field that will be used for sorting. Choices are id, name, path, pattern, schedule, duration, alias, next_run, and next_snapshot. Default is id.
 	Sort types.String `tfsdk:"sort"`
 	// Return no more than this many results at once.
-	Limit types.Int64 `tfsdk:"limit"`
+	Limit types.Int32 `tfsdk:"limit"`
 	// The direction of the sort.Supported Values:ASC , DESC
 	Dir types.String `tfsdk:"dir"`
 
@@ -69,8 +69,6 @@ type SnapshotScheduleFilter struct {
 type SnapshotScheduleResource struct {
 	// Alias name to create for each snapshot.
 	Alias types.String `tfsdk:"alias"`
-	// Time in seconds added to creation time to construction expiration time.
-	Duration types.Int64 `tfsdk:"duration"`
 	// The system ID given to the schedule.
 	ID types.String `tfsdk:"id"`
 	// The schedule name.
@@ -85,6 +83,6 @@ type SnapshotScheduleResource struct {
 	Pattern types.String `tfsdk:"pattern"`
 	// The isidate compatible natural language description of the schedule.
 	Schedule types.String `tfsdk:"schedule"`
-	//Time value in String for which snapshots created by this snapshot schedule should be retained. Values supported are of format : "Never Expires, x Seconds(s), x Minute(s), x Hour(s), x Week(s), x Day(s), x Month(s), x Year(s) where x can be any integer value.
+	//Time value in String for which snapshots created by this snapshot schedule should be retained. Values supported are of format : "Never Expires, x Seconds(s), x Minute(s), x Hour(s), x Day(s), x Week(s), x Year(s) where x can be any integer value.
 	RetentionTime types.String `tfsdk:"retention_time"`
 }

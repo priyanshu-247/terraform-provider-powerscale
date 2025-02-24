@@ -21,6 +21,12 @@ import (
 	"context"
 	powerscale "dell/powerscale-go-client"
 	"fmt"
+	"strings"
+	"terraform-provider-powerscale/client"
+	"terraform-provider-powerscale/powerscale/constants"
+	"terraform-provider-powerscale/powerscale/helper"
+	"terraform-provider-powerscale/powerscale/models"
+
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -29,11 +35,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"strings"
-	"terraform-provider-powerscale/client"
-	"terraform-provider-powerscale/powerscale/constants"
-	"terraform-provider-powerscale/powerscale/helper"
-	"terraform-provider-powerscale/powerscale/models"
 )
 
 // SmbShareResource creates a new resource.
@@ -419,6 +420,14 @@ func (r SmbShareResource) Create(ctx context.Context, request resource.CreateReq
 		return
 	}
 
+	var sharePlanBackup models.SmbShareResource
+	diagsB := request.Plan.Get(ctx, &sharePlanBackup)
+
+	response.Diagnostics.Append(diagsB...)
+	if response.Diagnostics.HasError() {
+		return
+	}
+
 	shareToCreate := powerscale.V7SmbShare{}
 	// Get param from tf input
 	err := helper.ReadFromState(ctx, sharePlan, &shareToCreate)
@@ -466,7 +475,7 @@ func (r SmbShareResource) Create(ctx context.Context, request resource.CreateReq
 		)
 		return
 	}
-
+	helper.SMBShareListsDiff(ctx, sharePlanBackup, &sharePlan)
 	diags = response.State.Set(ctx, sharePlan)
 	response.Diagnostics.Append(diags...)
 	if response.Diagnostics.HasError() {
@@ -481,6 +490,13 @@ func (r SmbShareResource) Read(ctx context.Context, request resource.ReadRequest
 	var shareState models.SmbShareResource
 	diags := request.State.Get(ctx, &shareState)
 	response.Diagnostics.Append(diags...)
+	if response.Diagnostics.HasError() {
+		return
+	}
+
+	var shareStateBackup models.SmbShareResource
+	diagsB := request.State.Get(ctx, &shareStateBackup)
+	response.Diagnostics.Append(diagsB...)
 	if response.Diagnostics.HasError() {
 		return
 	}
@@ -517,6 +533,7 @@ func (r SmbShareResource) Read(ctx context.Context, request resource.ReadRequest
 		)
 		return
 	}
+	helper.SMBShareListsDiff(ctx, shareStateBackup, &shareState)
 	diags = response.State.Set(ctx, shareState)
 	response.Diagnostics.Append(diags...)
 	if response.Diagnostics.HasError() {
@@ -542,6 +559,14 @@ func (r SmbShareResource) Update(ctx context.Context, request resource.UpdateReq
 		return
 	}
 
+	var sharePlanBackup models.SmbShareResource
+	diagsB := request.Plan.Get(ctx, &sharePlanBackup)
+
+	response.Diagnostics.Append(diagsB...)
+	if response.Diagnostics.HasError() {
+		return
+	}
+
 	tflog.Debug(ctx, "calling update smb share", map[string]interface{}{
 		"sharePlan":  sharePlan,
 		"shareState": shareState,
@@ -561,7 +586,7 @@ func (r SmbShareResource) Update(ctx context.Context, request resource.UpdateReq
 	zoneName := shareState.Zone.ValueString()
 	// if share name is updated, query original zone
 	if !sharePlan.Zone.Equal(shareState.Zone) {
-		zoneName, err = helper.QueryZoneNameByID(ctx, r.client, int32(shareState.Zid.ValueInt64()))
+		zoneName, err = helper.QueryZoneNameByID(ctx, r.client, (shareState.Zid.ValueInt64()))
 		if err != nil {
 			response.Diagnostics.AddError(
 				"Error update smb share",
@@ -611,6 +636,7 @@ func (r SmbShareResource) Update(ctx context.Context, request resource.UpdateReq
 	}
 	// Zone need to be manually set
 	shareState.Zone = sharePlan.Zone
+	helper.SMBShareListsDiff(ctx, sharePlanBackup, &shareState)
 	diags = response.State.Set(ctx, shareState)
 	response.Diagnostics.Append(diags...)
 	if response.Diagnostics.HasError() {

@@ -23,11 +23,14 @@ import (
 	powerscale "dell/powerscale-go-client"
 	"encoding/json"
 	"fmt"
-	"golang.org/x/net/html"
+	"math"
 	"math/big"
 	"net/http"
 	"reflect"
 	"strings"
+	"terraform-provider-powerscale/client"
+
+	"golang.org/x/net/html"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -35,6 +38,7 @@ import (
 )
 
 // CopyFields copy the source of a struct to destination of struct with terraform types.
+// Unsigned integers are not properly handled.
 func CopyFields(ctx context.Context, source, destination interface{}) error {
 	tflog.Debug(ctx, "Copy fields", map[string]interface{}{
 		"source":      source,
@@ -94,7 +98,10 @@ func CopyFields(ctx context.Context, source, destination interface{}) error {
 			case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 				destinationFieldValue = types.Int64Value(sourceField.Int())
 			case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-				destinationFieldValue = types.Int64Value(sourceField.Int())
+				if sourceField.Uint() > math.MaxInt64 {
+					return fmt.Errorf("source field value is too large for int64")
+				}
+				destinationFieldValue = types.Int64Value(int64(sourceField.Uint())) // #nosec G115 --- validated, Error returned if value is too large for int64
 			case reflect.Float32, reflect.Float64:
 				// destinationFieldValue = types.Float64Value(sourceField.Float())
 				destinationFieldValue = types.NumberValue(big.NewFloat(sourceField.Float()))
@@ -336,4 +343,23 @@ func extractText(n *html.Node, message *string) {
 	for c := n.FirstChild; c != nil; c = c.NextSibling {
 		extractText(c, message)
 	}
+}
+
+// GetClusterVersion retrieves the cluster version.
+func GetClusterVersion(ctx context.Context, client *client.Client) (string, error) {
+	clusterVersion, _, err := client.PscaleOpenAPIClient.ClusterApi.GetClusterv3ClusterVersion(ctx).Execute()
+	if err != nil {
+		return "", err
+	}
+	return clusterVersion.Nodes[0].Release, err
+}
+
+// For List set explicitly from plan
+// This is to keep state in similar order to plan
+// Lists returned from the array are not always in the same order as they appear in the plan
+func ListCheck(list types.List, elementType attr.Type) types.List {
+	if list.IsUnknown() {
+		return types.ListNull(elementType)
+	}
+	return list
 }

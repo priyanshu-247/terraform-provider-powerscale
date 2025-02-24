@@ -18,6 +18,8 @@ limitations under the License.
 package constants
 
 const (
+	// APIErrorMessage specifies Generic REST API error message.
+	APIErrorMessage = "REST API returned with error: "
 
 	// ReadSnapshotErrorMessage specifies error details occurred while reading Snapshots.
 	ReadSnapshotErrorMessage = "Could not read snapshots "
@@ -189,6 +191,9 @@ const (
 
 	// ListNfsExportErrorMsg specifies error details occurred while listing nfs exports.
 	ListNfsExportErrorMsg = "Could not list nfs exports "
+
+	// ListNfsAliasErrorMsg specifies error details occurred while listing nfs exports.
+	ListNfsAliasErrorMsg = "Could not list nfs aliases "
 
 	// GetSmbShareErrorMsg specifies error details occurred while getting smb share.
 	GetSmbShareErrorMsg = "Could not get smb share "
@@ -443,4 +448,67 @@ const (
 
 	// GetClusterVersionErrorMsg specifies error details occurred while getting cluster version.
 	GetClusterVersionErrorMsg = "Could not get cluster version"
+
+	// ReadWritableSnapshotErrorMsg specifies error details occurred while reading writable snapshot settings.
+	ReadWritableSnapshotErrorMsg = "Could not read writable snapshot settings"
+
+	// UpdateWritableSnapshotErrorMsg specifies error details occurred while updating writable snapshot settings.
+	UpdateWritableSnapshotErrorMsg = "Could not update writable snapshot settings"
+
+	// DeleteWritableSnapshotErrorMsg specifies error details occurred while deleting writable snapshot.
+	DeleteWritableSnapshotErrorMsg = "Could not delete writable snapshot"
+
+	// CreateSnapshotRestoreJobErrorMsg specifies error details occurred while creating snapshot restore job.
+	CreateSnapshotRestoreJobErrorMsg = "Could not create snapshot restore job "
+
+	// ReadSnapshotRestoreJobErrorMsg specifies error details occurred while reading snapshot restore job.
+	ReadSnapshotRestoreJobErrorMsg = "Could not read snapshot restore job "
+
+	// ReadSnapshotRestoreJobReportErrorMsg specifies error details occurred while reading snapshot restore job reports.
+	ReadSnapshotRestoreJobReportErrorMsg = "Could not read snapshot restore job reports "
+
+	// ReadReplicationReportsErrorMsg specifies error details occurred while reading replication reports.
+	ReadReplicationReportsErrorMsg = "Could not read Replication Reports"
+
+	// CreateNfsAliasErrorMsg specifies error details occurred while creating nfs alias.
+	CreateNfsAliasErrorMsg = "Could not create nfs alias"
+
+	// ReadNfsAliasErrorMsg specifies error details occurred while reading nfs alias.
+	ReadNfsAliasErrorMsg = "Could not read nfs alias"
+
+	// UpdateNfsAliasErrorMsg specifies error details occurred while updating nfs alias.
+	UpdateNfsAliasErrorMsg = "Could not update nfs alias"
+
+	// DeleteNfsAliasErrorMsg specifies error details occurred while deleting nfs alias.
+	DeleteNfsAliasErrorMsg = "Could not delete nfs alias"
+
+	// ListWritableSnapshotMsg specifies error details occurred while listing writable snapshot.
+	ListWritableSnapshotMsg = "Could not list Writable Snapshot "
+
+	// CopyDirectoryErrorMessage specifies error details occurred while copying directory.
+	CopyDirectoryErrorMessage = "Could not copy directory "
+
+	// CopyFileErrorMessage specifies error details occurred while copying file.
+	CopyFileErrorMessage = "Could not copy file "
+
+	// CloneFileErrorMessage specifies error details occurred while cloning file.
+	CloneFileErrorMessage = "Could not clone file "
+
+	// ReadSyncIQReplicationJobErrorMessage specifies error details occurred while reading SyncIQ jobs.
+	ReadSyncIQReplicationJobErrorMessage = "Could not read SyncIQ jobs "
+
+	// ReadStoragepoolTiersErrorMsg specifies error details occurred while reading storagepool tiers.
+	ReadStoragepoolTiersErrorMsg = "Could not read storagepool tiers "
+
+	// ReadStoragepoolTierErrorMsg specifies error details occurred while reading Storage pool tiers.
+	ReadStoragepoolTierErrorMsg = "Could not read storagepool tier "
+
+	// CreateStoragepoolTierErrorMsg specifies error details occurred while creating Storage pool tiers.
+	CreateStoragepoolTierErrorMsg = "Could not create storagepool tier "
+
+	// UpdateStoragepoolTierErrorMsg specifies error details occurred while updating Storage pool Tier settings.
+	UpdateStoragepoolTierErrorMsg = "Could not update storagepool tier settings "
+
+	// DeleteStoragepoolTierErrorMsg specifies error details occurred while deleting Storage pool Tier.
+	DeleteStoragepoolTierErrorMsg = "Could not delete storagepool tier "
 )

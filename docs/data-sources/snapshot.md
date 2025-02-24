@@ -55,11 +55,19 @@ output "powerscale_snapshot_data_all" {
   value = data.powerscale_snapshot.all
 }
 
-# Returns a subset of the PowerScale snapshots based on the path provided in the `paths` filter block and their details
+# Returns a subset of the PowerScale snapshots in order based on the filters provided in the filter block and their details
 data "powerscale_snapshot" "test" {
-  # Optional path of the filesystem, this will return all the snapshots related to that particular path
   filter {
-    path = "/ifs/tfacc_file_system_test"
+    path = "/ifs"
+    sort = "name"
+    dir  = "DESC"
+  }
+}
+
+#Returns the snapshot with the given name
+data "powerscale_snapshot" "test" {
+  filter {
+    name = "name"
   }
 }
 
@@ -88,7 +96,14 @@ output "powerscale_snapshot" {
 
 Optional:
 
+- `dir` (String) The direction of the sort.
+- `limit` (Number) Return no more than this many results at once (see resume).
+- `name` (String)
 - `path` (String)
+- `schedule` (String) The schedule of the snapshot.
+- `sort` (String) The field that will be used for sorting.
+- `state` (String) The state of the snapshot.
+- `type` (String) The type of the snapshot.
 
 
 <a id="nestedatt--snapshots_details"></a>
@@ -113,5 +128,5 @@ Read-Only:
 - `shadow_bytes` (Number) The amount of shadow bytes referred to by this snapshot.
 - `size` (Number) The amount of storage in bytes used to store this snapshot.
 - `state` (String) Snapshot state.
-- `target_id` (Number) The ID of the snapshot pointed to if this is an alias. 18446744073709551615 (max uint64) is returned for an alias to the live filesystem.
+- `target_id` (Number) The ID of the snapshot pointed to if this is an alias. An alias to the live filesystem is represented by the value -1.
 - `target_name` (String) The name of the snapshot pointed to if this is an alias.

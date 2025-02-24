@@ -38,7 +38,6 @@ func TestAccSnapshotDataSource(t *testing.T) {
 				Config: ProviderConfig + SnapshotDataSourceConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet(snapshotTerraformName, "snapshots_details.0.expires"),
-					resource.TestCheckResourceAttr(snapshotTerraformName, "snapshots_details.0.has_locks", "false"),
 					resource.TestCheckResourceAttr(snapshotTerraformName, "snapshots_details.0.pct_reserve", "0"),
 					resource.TestCheckResourceAttr(snapshotTerraformName, "snapshots_details.0.path", "/ifs/tfacc_file_system_test"),
 					resource.TestCheckResourceAttr(snapshotTerraformName, "snapshots_details.0.shadow_bytes", "0"),
@@ -60,6 +59,22 @@ func TestAccSnapshotDataSourceAll(t *testing.T) {
 				Config: ProviderConfig + SnapshotAllDataSourceConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet(azTerraformName, "snapshots_details.#"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccSnapshotDataSourceFilterByName(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Name filter read testing
+			{
+				Config: ProviderConfig + SnapshotDataSourceNameConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("data.powerscale_snapshot.test", "snapshots_details.0.name", "tfacc_snapshot_1"),
 				),
 			},
 		},
@@ -99,17 +114,103 @@ func TestAccSnapshotDataSourceMapErr(t *testing.T) {
 }
 
 var SnapshotDataSourceConfig = `
+resource "powerscale_filesystem" "file_system_test2" {
+	directory_path         = "/ifs"	
+	name = "tfacc_file_system_test"
+	
+	  recursive = true
+	  overwrite = true
+	  group = {
+		id   = "GID:0"
+		name = "wheel"
+		type = "group"
+	  }
+	  owner = {
+		  id   = "UID:0",
+		 name = "root",
+		 type = "user"
+	   }
+}
+
+resource "powerscale_snapshot" "test" {
+	depends_on = [powerscale_filesystem.file_system_test2]
+	path = "/ifs/tfacc_file_system_test"
+	name = "tfacc_snapshot_1"
+	set_expires = "1 Day"
+}
+
 data "powerscale_snapshot" "test" {
+depends_on = [powerscale_snapshot.test]
   filter {
-    path = "/ifs/tfacc_file_system_test"
+	path = "/ifs/tfacc_file_system_test"
+	state = "active"
   }
 }
-output "powerscale_snapshot" {
-	value = data.powerscale_snapshot.test
+`
+
+var SnapshotDataSourceNameConfig = `
+resource "powerscale_filesystem" "file_system_test2" {
+	directory_path         = "/ifs"	
+	name = "tfacc_file_system_test"
+	
+	  recursive = true
+	  overwrite = true
+	  group = {
+		id   = "GID:0"
+		name = "wheel"
+		type = "group"
+	  }
+	  owner = {
+		  id   = "UID:0",
+		 name = "root",
+		 type = "user"
+	   }
+}
+
+resource "powerscale_snapshot" "test" {
+depends_on = [powerscale_filesystem.file_system_test2]
+  path = "/ifs/tfacc_file_system_test"
+  name = "tfacc_snapshot_1"
+}
+
+data "powerscale_snapshot" "test" {
+  filter {
+	name = "tfacc_snapshot_1"
+  }
+
+  depends_on = [
+	powerscale_snapshot.test
+  ]
 }
 `
 
 var SnapshotAllDataSourceConfig = `
+resource "powerscale_filesystem" "file_system_test2" {
+	directory_path         = "/ifs"	
+	name = "tfacc_file_system_test"
+	
+	  recursive = true
+	  overwrite = true
+	  group = {
+		id   = "GID:0"
+		name = "wheel"
+		type = "group"
+	  }
+	  owner = {
+		  id   = "UID:0",
+		 name = "root",
+		 type = "user"
+	   }
+}
+
+resource "powerscale_snapshot" "test" {
+	depends_on = [powerscale_filesystem.file_system_test2]
+	path = "/ifs/tfacc_file_system_test"
+	name = "tfacc_snapshot_1"
+	set_expires = "1 Day"
+}
+
 data "powerscale_snapshot" "all" {
+  depends_on = [powerscale_snapshot.test]
 }
 `

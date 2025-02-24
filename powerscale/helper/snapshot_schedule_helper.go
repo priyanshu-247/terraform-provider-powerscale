@@ -41,14 +41,55 @@ func ListSnapshotSchedules(ctx context.Context, client *client.Client, ssFilter 
 			listSsParam = listSsParam.Dir(ssFilter.Dir.ValueString())
 		}
 		if !ssFilter.Limit.IsNull() {
-			listSsParam = listSsParam.Limit(int32(ssFilter.Limit.ValueInt64()))
+			listSsParam = listSsParam.Limit((ssFilter.Limit.ValueInt32()))
 		}
 	}
 	snapshotSchedules, _, err := listSsParam.Execute()
 	if err != nil {
 		return nil, err
 	}
+	//pagination
+	for snapshotSchedules.Resume != nil && (ssFilter == nil || ssFilter.Limit.IsNull()) {
+		listSsParam = listSsParam.Resume(*snapshotSchedules.Resume)
+		newresp, _, errAdd := listSsParam.Execute()
+		if errAdd != nil {
+			return snapshotSchedules.Schedules, err
+		}
+		snapshotSchedules.Resume = newresp.Resume
+		snapshotSchedules.Schedules = append(snapshotSchedules.Schedules, newresp.Schedules...)
+	}
 	return snapshotSchedules.Schedules, nil
+}
+
+func ConvertTimeDurationToRetentionTime(time *int32) string {
+	if time == nil {
+		return "Never Expires"
+	}
+	timeValue := *time
+	switch true {
+	// Less then 60 use seconds
+	case timeValue < int32(60):
+		return fmt.Sprintf("%d %s", timeValue, "Second(s)")
+	// Use Minutes
+	case timeValue < int32(3600):
+		return fmt.Sprintf("%d %s", timeValue/60, "Minute(s)")
+	// Use hours
+	case timeValue < int32(86400):
+		return fmt.Sprintf("%d %s", timeValue/3600, "Hour(s)")
+	// Use days
+	case timeValue < int32(604800):
+		return fmt.Sprintf("%d %s", timeValue/86400, "Day(s)")
+	// Use weeks
+	// This is not 29030400 1 year in seconds but it is what is returned by the API as equivalant to 1 year in seconds
+	case timeValue < int32(29030400):
+		return fmt.Sprintf("%d %s", timeValue/604800, "Week(s)")
+	// Use years
+	default:
+		test := math.Ceil(float64(timeValue) / float64(31536000))
+		rounded := strconv.FormatFloat(test, 'f', 0, 64)
+		// Always round up for years
+		return fmt.Sprintf("%s %s", rounded, "Year(s)")
+	}
 }
 
 // ParseTimeStringToSeconds takes a string time value(in a specific format) and converts it to seconds.
@@ -126,13 +167,15 @@ func CreateSnapshotSchedule(ctx context.Context, client *client.Client, plan *mo
 
 // SnapshotScheduleMapper Does the mapping from response to model.
 func SnapshotScheduleMapper(ctx context.Context, snapshotSchedule powerscale.V1SnapshotScheduleExtendedExtendedExtended, model *models.SnapshotScheduleResource) error {
-
 	err := CopyFields(ctx, &snapshotSchedule, model)
 	if err != nil {
 		return err
 	}
+	// Import case convert from duration to retention time
+	if model.RetentionTime.IsNull() {
+		model.RetentionTime = types.StringValue(ConvertTimeDurationToRetentionTime(snapshotSchedule.Duration))
+	}
 	model.ID = types.StringValue(fmt.Sprint(*snapshotSchedule.Id))
-	model.Duration = types.Int64Value(int64(*snapshotSchedule.Duration))
 	model.NextRun = types.Int64Value(int64(*snapshotSchedule.NextRun))
 	return nil
 }
@@ -162,10 +205,7 @@ func UpdateSnapshotSchedule(ctx context.Context, client *client.Client, plan *mo
 		if err != nil {
 			return fmt.Errorf("error converting Retention time - %s", err)
 		}
-		if state.Duration.ValueInt64() != int64(*duration) {
-			ss.SetDuration(*duration)
-		}
-
+		ss.SetDuration(*duration)
 	}
 	updateReq := client.PscaleOpenAPIClient.SnapshotApi.UpdateSnapshotv1SnapshotSchedule(ctx, state.ID.ValueString())
 	updateReq = updateReq.V1SnapshotSchedule(ss)

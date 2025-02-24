@@ -20,14 +20,18 @@ package provider
 import (
 	"context"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"terraform-provider-powerscale/client"
 	"terraform-provider-powerscale/powerscale/constants"
 	"terraform-provider-powerscale/powerscale/helper"
 	"terraform-provider-powerscale/powerscale/models"
+
+	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 var (
@@ -705,16 +709,25 @@ func (d *NfsExportDataSource) Schema(_ context.Context, _ datasource.SchemaReque
 						MarkdownDescription: "Paths to filter nfs exports.",
 						Optional:            true,
 						ElementType:         types.StringType,
+						Validators: []validator.Set{
+							setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
+						},
 					},
 					"sort": schema.StringAttribute{
 						Description:         "The field that will be used for sorting.",
 						MarkdownDescription: "The field that will be used for sorting.",
 						Optional:            true,
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 					},
 					"zone": schema.StringAttribute{
 						Description:         "Specifies which access zone to use.",
 						MarkdownDescription: "Specifies which access zone to use.",
 						Optional:            true,
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 					},
 					"resume": schema.StringAttribute{
 						Description: "Continue returning results from previous call using this token " +
@@ -723,12 +736,12 @@ func (d *NfsExportDataSource) Schema(_ context.Context, _ datasource.SchemaReque
 							"(token should come from the previous call, resume cannot be used with other options).",
 						Optional: true,
 					},
-					"limit": schema.Int64Attribute{
+					"limit": schema.Int32Attribute{
 						Description:         "Return no more than this many results at once (see resume).",
 						MarkdownDescription: "Return no more than this many results at once (see resume).",
 						Optional:            true,
 					},
-					"offset": schema.Int64Attribute{
+					"offset": schema.Int32Attribute{
 						Description:         "The position of the first item returned for a paginated query within the full result set.",
 						MarkdownDescription: "The position of the first item returned for a paginated query within the full result set.",
 						Optional:            true,
@@ -739,6 +752,9 @@ func (d *NfsExportDataSource) Schema(_ context.Context, _ datasource.SchemaReque
 						MarkdownDescription: "If specified as \"effective\" or not specified, all fields are returned. " +
 							"If specified as \"user\", only fields with non-default values are shown. If specified as \"default\", the original values are returned.",
 						Optional: true,
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 					},
 					"dir": schema.StringAttribute{
 						Description:         "The direction of the sort.",
@@ -749,6 +765,9 @@ func (d *NfsExportDataSource) Schema(_ context.Context, _ datasource.SchemaReque
 						Description:         "If specified, only exports that explicitly reference at least one of the given paths will be returned.",
 						MarkdownDescription: "If specified, only exports that explicitly reference at least one of the given paths will be returned.",
 						Optional:            true,
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 					},
 					"check": schema.BoolAttribute{
 						Description:         "Check for conflicts when listing exports.",

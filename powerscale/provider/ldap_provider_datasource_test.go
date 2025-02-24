@@ -51,8 +51,8 @@ func TestAccLdapProviderDataSource(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(ldapProviderTerraformName, "ldap_providers.#", "1"),
 					resource.TestCheckResourceAttr(ldapProviderTerraformName, "ldap_providers.0.name", "tfacc_ldap"),
-					resource.TestCheckResourceAttr(ldapProviderTerraformName, "ldap_providers.0.server_uris.0", "ldap://10.225.108.54"),
-					resource.TestCheckResourceAttr(ldapProviderTerraformName, "ldap_providers.0.base_dn", "dc=tthe,dc=testLdap,dc=com"),
+					resource.TestCheckResourceAttr(ldapProviderTerraformName, "ldap_providers.0.server_uris.0", "ldap://10.225.108.11"),
+					resource.TestCheckResourceAttr(ldapProviderTerraformName, "ldap_providers.0.base_dn", "dc=yulan,dc=pie,dc=lab,dc=emc,dc=com"),
 					resource.TestCheckResourceAttr(ldapProviderTerraformName, "ldap_providers.0.authentication", "true"),
 				),
 			},
@@ -62,8 +62,8 @@ func TestAccLdapProviderDataSource(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(ldapProviderTerraformName, "ldap_providers.#", "1"),
 					resource.TestCheckResourceAttr(ldapProviderTerraformName, "ldap_providers.0.name", "tfacc_ldap"),
-					resource.TestCheckResourceAttr(ldapProviderTerraformName, "ldap_providers.0.server_uris.0", "ldap://10.225.108.54"),
-					resource.TestCheckResourceAttr(ldapProviderTerraformName, "ldap_providers.0.base_dn", "dc=tthe,dc=testLdap,dc=com"),
+					resource.TestCheckResourceAttr(ldapProviderTerraformName, "ldap_providers.0.server_uris.0", "ldap://10.225.108.11"),
+					resource.TestCheckResourceAttr(ldapProviderTerraformName, "ldap_providers.0.base_dn", "dc=yulan,dc=pie,dc=lab,dc=emc,dc=com"),
 					resource.TestCheckNoResourceAttr(ldapProviderTerraformName, "ldap_providers.0.authentication"),
 				),
 			},
@@ -145,6 +145,7 @@ func TestAccLdapProviderDatasourceErrorCopyField(t *testing.T) {
 
 func TestAccLdapProviderDatasourceHelperMockErr(t *testing.T) {
 	var ldapProviderTerraformName = "data.powerscale_ldap_provider.test"
+	mockV16LdapProviders, mockV11LdapProviders := getMockLdapProviderConfig()
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -195,8 +196,8 @@ func TestAccLdapProviderDatasourceHelperMockErr(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(ldapProviderTerraformName, "ldap_providers.#", "1"),
 					resource.TestCheckResourceAttr(ldapProviderTerraformName, "ldap_providers.0.name", "tfacc_ldap"),
-					resource.TestCheckResourceAttr(ldapProviderTerraformName, "ldap_providers.0.server_uris.0", "ldap://10.225.108.54"),
-					resource.TestCheckResourceAttr(ldapProviderTerraformName, "ldap_providers.0.base_dn", "dc=tthe,dc=testLdap,dc=com"),
+					resource.TestCheckResourceAttr(ldapProviderTerraformName, "ldap_providers.0.server_uris.0", "ldap://10.225.108.11"),
+					resource.TestCheckResourceAttr(ldapProviderTerraformName, "ldap_providers.0.base_dn", "dc=yulan,dc=pie,dc=lab,dc=emc,dc=com"),
 					resource.TestCheckResourceAttr(ldapProviderTerraformName, "ldap_providers.0.tls_revocation_check_level", "none"),
 				),
 			},
@@ -216,8 +217,8 @@ func TestAccLdapProviderDatasourceHelperMockErr(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(ldapProviderTerraformName, "ldap_providers.#", "1"),
 					resource.TestCheckResourceAttr(ldapProviderTerraformName, "ldap_providers.0.name", "tfacc_ldap"),
-					resource.TestCheckResourceAttr(ldapProviderTerraformName, "ldap_providers.0.server_uris.0", "ldap://10.225.108.54"),
-					resource.TestCheckResourceAttr(ldapProviderTerraformName, "ldap_providers.0.base_dn", "dc=tthe,dc=testLdap,dc=com"),
+					resource.TestCheckResourceAttr(ldapProviderTerraformName, "ldap_providers.0.server_uris.0", "ldap://10.225.108.11"),
+					resource.TestCheckResourceAttr(ldapProviderTerraformName, "ldap_providers.0.base_dn", "dc=yulan,dc=pie,dc=lab,dc=emc,dc=com"),
 					resource.TestCheckNoResourceAttr(ldapProviderTerraformName, "ldap_providers.0.tls_revocation_check_level"),
 				),
 			},
@@ -249,34 +250,23 @@ data "powerscale_ldap_provider" "test" {
 }
 `
 
+// these vars are initialized by initLdapVars function
 var ldapProviderFilterNameDataSourceConfig = `
-resource "powerscale_ldap_provider" "test" {
-	name = "tfacc_ldap"
-	base_dn = "dc=tthe,dc=testLdap,dc=com"
-	server_uris = ["ldap://10.225.108.54"]
-}
-
 data "powerscale_ldap_provider" "test" {
 	filter {
-    names = [powerscale_ldap_provider.test.name]
+    names = [powerscale_ldap_provider.ldap_test.name]
   }
-  depends_on = [powerscale_ldap_provider.test]
+  depends_on = [powerscale_ldap_provider.ldap_test]
 }
 `
 
 var ldapProviderFilterScopeDataSourceConfig = `
-resource "powerscale_ldap_provider" "test" {
-	name = "tfacc_ldap"
-	base_dn = "dc=tthe,dc=testLdap,dc=com"
-	server_uris = ["ldap://10.225.108.54"]
-}
-
 data "powerscale_ldap_provider" "test" {
 	filter {
 		scope = "user"
-		names = [powerscale_ldap_provider.test.name]
+		names = [powerscale_ldap_provider.ldap_test.name]
   }
-  depends_on = [powerscale_ldap_provider.test]
+  depends_on = [powerscale_ldap_provider.ldap_test]
 }
 `
 
